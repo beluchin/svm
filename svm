@@ -1,0 +1,6 @@
+#!/bin/bash
+
+bs=$BASH_SOURCE
+scriptDir=$([[ $bs =~ '^/' ]] && echo $(dirname $bs) || echo $(cd $(dirname $bs); pwd))
+
+python3 $scriptDir/svm.py "$@" 
