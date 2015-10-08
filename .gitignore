@@ -4,7 +4,7 @@
 
 # svm files
 last_ids_to_titles
-*json
+*.json	
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

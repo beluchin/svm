@@ -1,5 +1,5 @@
 # svm
-Spartans video manager
+Spartans swim team video manager
 
 Use this command line tool to rename videos in YouTube. The following subcommands are available: `rename`, `rename-many`, `undo`, and `reset-credentials`. The subcommands are invoked via the `svm.bat` command (or `svm` on a Mac) as in:
 
@@ -14,13 +14,13 @@ To rename a video, you need to provide the YouTube video id and the new title in
 
     svm.bat rename the_video_id,the_new_title
     
-If the new title has spaces, you would need to wrap the entire new title in quotes:
+If the new title has spaces, you would need to wrap the entire new title in quotes (double quotes on Windows):
 
-    svm.bat rename 98745lfgdklsf,'this new title has spaces'
+    svm.bat rename 98745lfgdklsf,"this new title has spaces"
     
 Notice that you could use this command to rename multiple videos:
 
-    svm.bat rename 9879ldjfH,'first video' kjgI0_984k,'the second video'
+    svm.bat rename 9879ldjfH,"first video" kjgI0_984k,"the second video"
     
 (btw, the new titles may not contain commas)
 
