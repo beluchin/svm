@@ -46,6 +46,8 @@ https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
                                    CLIENT_SECRETS_FILE))
 
 def get_authenticated_youtube():
+    ''' returns a youtube service '''
+
     oauth2_file = 'resources/default-oauth2.json'
     default_flags = argparser.parse_args([])
     return _get_authenticated_service(oauth2_file, default_flags)

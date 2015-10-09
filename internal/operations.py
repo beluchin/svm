@@ -2,12 +2,18 @@
 import os
 
 from internal.data_utils import ids_to_titles_from_file, ids_to_titles_from_items
-from internal.exception import SomeVideosDontExistException
+from internal.reporting import report_missing_videos, report_video_failed_to_rename
 from internal.service import reset_default_credentials
 from internal.service.data_queries import video_list_response
 
 
 _undo_filename = "last_ids_to_titles"
+
+def _update(youtube, **kwargs):
+    try:
+        youtube.videos().update(**kwargs).execute()
+    except:
+        report_video_failed_to_rename(kwargs['body']['id'])
 
 
 def rename(youtube, ids_to_titles):
@@ -17,19 +23,20 @@ def rename(youtube, ids_to_titles):
 
     missing = _missing_videos(items, ids)
     if missing:
-        raise SomeVideosDontExistException(missing);
+        report_missing_videos(missing)
 
     _save_existing_titles(items)
 
     for item in items:
-        snippet = item["snippet"]
         videoId = item['id']
+        if videoId in missing: 
+            continue
+        snippet = item["snippet"]
         snippet['title'] = ids_to_titles[videoId]
 
-        youtube.videos().update(
-            part='snippet',
-            body=dict(snippet=snippet, id=videoId)) \
-            .execute()
+        _update(youtube, 
+                part='snippet',
+                body=dict(snippet=snippet, id=videoId))
 
 
 def undo(youtube):

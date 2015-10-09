@@ -71,8 +71,8 @@ def contains_too_many_commas(s):
     return s.count(',') > 1
 
 
-def validate_arguments():
-    for arg in sys.argv:
+def validate_arguments(argv_):
+    for arg in argv_:
         if (contains_too_many_commas(arg)):
             raise TooManyCommasException(arg)
         
@@ -89,6 +89,16 @@ def as_user_readable(e):
     return '%s: %s' % (ex, str(e))
 
 
+def main(argv_):
+    try:
+        validate_arguments(argv_)
+        
+        args = parser.parse_args(argv_)
+        args.func(args)
+    except DomainException as e:
+        print(as_user_readable(e))
+
+    
 parser = argparse.ArgumentParser(
         prog='svm',
         description='manages Spartans swim team videos', 
@@ -102,10 +112,4 @@ add_undo_parser(subparsers)
 
 
 if __name__ == '__main__':
-    try:
-        validate_arguments()
-        
-        args = parser.parse_args()
-        args.func(args)
-    except DomainException as e:
-        print(as_user_readable(e))
+    main(sys.argv)

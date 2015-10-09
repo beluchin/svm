@@ -3,10 +3,10 @@ import unittest
 
 from internal.exception import SomeVideosDontExistException
 from internal.operations import rename
-from test.test_authenticated import TestAuthenticated
+from test.test_authenticated import TestAuthenticatedForReal
 
 
-class RenameVideoTest(TestAuthenticated):
+class ForRealRenameVideoTest(TestAuthenticatedForReal):
     def test_rename(self):
         rename(self._youtube, 
                {'2_qmVg0qn-c': '2 _ q m V g 0 q n - c',
