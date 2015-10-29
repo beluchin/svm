@@ -8,12 +8,26 @@ import svm
 class TestStubbedYouTube(TestCase):
     def setUp(self):
         self._youtube = self._create_patch('svm.get_authenticated_youtube')
-
-    def _assert_got_renamed(self, videoid):
-        _, kwargs = self._youtube.return_value\
+        self._update_mock = self._youtube.return_value\
                 .videos.return_value\
-                .update.call_args 
-        self.assertEqual(kwargs['body']['id'], videoid)
+                .update
+        self._list_mock = self._youtube.return_value\
+                .videos.return_value\
+                .list 
+
+    def _reset_rename_calls(self):
+        self._update_mock.reset_mock()
+                
+    def _all_renamed(self):
+        calls = self._update_mock.call_args_list
+        result = list()
+        for c in calls:
+            _, kwargs = c;
+            result.append(kwargs['body']['id'])
+        return result
+                
+    def _assert_was_renamed(self, videoid):
+        self.assertIn(videoid, self._all_renamed())
 
     def _create_patch(self, name):
         patcher = patch(name)
@@ -21,20 +35,25 @@ class TestStubbedYouTube(TestCase):
         self.addCleanup(patcher.stop)
         return thing
 
-    def _invoke(self, args):
-        svm.main(args.split())
+    def _invoke(self, *invocations):
+        for args in invocations:
+            svm.main(args.split())
 
     def _stub_as_existing(self, *videoids):
-        items = [{'id': v, 'snippet': {'title': 'whatever'}} for v in videoids]
-        self._youtube.return_value\
-                .videos.return_value\
-                .list.return_value\
-                .execute.return_value = {'items': items}
+        def f(**kwargs):
+            requested = set(kwargs['id'].split(','))
+            existing = set(videoids).intersection(requested)
+            result = MagicMock()
+            result.execute.return_value = {
+                    'items': [{'id': v, 'snippet': {'title': 'whatever'}} 
+                              for v in existing]}
+            return result
+            
+        self._list_mock.side_effect = f
 
     def _stub_none_existing(self):
-        self._youtube.return_value\
-                .videos.return_value\
-                .list.return_value = MagicMock()
+        self._list_mock.side_effect = None
+        self._list_mock.return_value = MagicMock()
 
     def _stub_as_rename_exception(self, videoid):
         def f(**kwargs):

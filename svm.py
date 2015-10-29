@@ -3,8 +3,9 @@ import argparse
 import re
 import sys
 
-from internal.data_utils import ids_to_titles_from_file
+from internal.data_utils import ids_to_titles_from_file, validate_rename_request
 from internal.exception import TooManyCommasException, DomainException
+from internal.operations import support_undo
 import internal.operations as operations
 from internal.service.youtube import get_authenticated_youtube
 
@@ -32,7 +33,7 @@ def add_rename_parser(subparsers):
     p.add_argument(
             metavar='videoid,title', 
             nargs='+', 
-            action=StoreNameValuePairs, 
+            action=ParseRenameRequest, 
             dest='pairs', 
             help='videoid-to-title mapping, comma-separated. Can enter many. Titles cannot have commas')
     p.set_defaults(func=rename)
@@ -49,34 +50,27 @@ def undo(args):
 
 def rename(args):
     s = get_authenticated_youtube()
-    operations.rename(s, args.pairs)
+    operations.rename(s, args.pairs, on_rename=support_undo())
 
 
 def rename_many(args):
     s = get_authenticated_youtube()
-    operations.rename(s, ids_to_titles_from_file(args.filename))
+    operations.rename(s, 
+                      ids_to_titles_from_file(args.filename), 
+                      on_rename=support_undo())
     
     
-class StoreNameValuePairs(argparse.Action):
+class ParseRenameRequest(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         pairs = getattr(namespace, 'pairs', {})
         pairs = pairs if pairs is not None else {}
         for pair in values:
+            validate_rename_request(pair)
             n, v = pair.split(',')
             pairs[n] = v
         setattr(namespace, 'pairs', pairs)
         
         
-def contains_too_many_commas(s):
-    return s.count(',') > 1
-
-
-def validate_arguments(argv_):
-    for arg in argv_:
-        if (contains_too_many_commas(arg)):
-            raise TooManyCommasException(arg)
-        
-
 def convert_from_camelcase(s):
     s = re.sub('(.)([A-Z][a-z]+)', r'\1 \2', s)
     return re.sub('([a-z0-9])([A-Z])', r'\1 \2', s).lower()
@@ -91,8 +85,6 @@ def as_user_readable(e):
 
 def main(argv_):
     try:
-        validate_arguments(argv_)
-        
         args = parser.parse_args(argv_)
         args.func(args)
     except DomainException as e:
@@ -112,4 +104,4 @@ add_undo_parser(subparsers)
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main(sys.argv[1:])

@@ -25,12 +25,32 @@ class UndoTest(TestStubbedYouTube):
         self._stub_as_existing('v1', 'v2')
         self._invoke('rename v1,t1 v2,t2')
         self._stub_as_existing('v1')
+        self._reset_rename_calls()
         self._invoke('undo')
-        self._assert_got_renamed('v1')
+        self._assert_was_renamed('v1')
         
     def test_4_doesnt_bail_on_individual_video_rename_error(self):
         self._stub_as_existing('v1', 'v2')
         self._invoke('rename v1,t1 v2,t2')
         self._stub_as_rename_exception('v1')
+        self._reset_rename_calls()
         self._invoke('undo')
-        self._assert_got_renamed('v2')
+        self._assert_was_renamed('v2')
+
+    def test_5_renames_back_what_was_truly_renamed(self):
+        self._stub_as_existing('v1', 'v2')
+        self._stub_as_rename_exception('v1')
+        self._invoke('rename v1,t1 v2,t2')
+        self._reset_rename_calls()
+        self._invoke('undo')
+        self.assertListEqual(self._all_renamed(), ['v2'])
+        
+    @patch('internal.operations.report_nothing_to_undo')        
+    def test_6_only_one_level_undo(self, reporter):
+        self._stub_as_existing('v1')
+        self._invoke('rename v1,t1',
+                     'rename v1,t2',
+                     'undo',
+                     'undo')
+        self.assertTrue(reporter.called)
+        

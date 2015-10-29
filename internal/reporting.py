@@ -1,4 +1,7 @@
 
+def report_nothing_to_undo():
+    print('nothing to undo')
+    
 def report_missing_videos(vs):
     print("some videos don't exist\n%s" % '\n'.join(vs))
 

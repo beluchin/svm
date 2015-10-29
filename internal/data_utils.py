@@ -1,3 +1,4 @@
+from internal.exception import TooManyCommasException
 
 
 def ids_to_titles_from_items(items):
@@ -10,10 +11,20 @@ def ids_to_titles_from_items(items):
     return result
 
 
+def validate_rename_request(line):
+    if (_contains_too_many_commas(line)):
+        raise TooManyCommasException(line)
+
+
+def _contains_too_many_commas(s):
+    return s.count(',') > 1
+
+
 def ids_to_titles_from_file(n):
     result = dict()
     with open(n) as f:
         for line in f:
+            validate_rename_request(line)
             videoid, title = line.split(',')
             result[videoid] = title
 

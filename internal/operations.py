@@ -1,22 +1,43 @@
 
 import os
+from os.path import isfile
 
-from internal.data_utils import ids_to_titles_from_file, ids_to_titles_from_items
-from internal.reporting import report_missing_videos, report_video_failed_to_rename
+from internal.data_utils import ids_to_titles_from_file
+from internal.reporting import \
+        report_missing_videos,\
+        report_video_failed_to_rename,\
+        report_nothing_to_undo
 from internal.service import reset_default_credentials
 from internal.service.data_queries import video_list_response
 
 
 _undo_filename = "last_ids_to_titles"
 
+
 def _update(youtube, **kwargs):
+    youtube.videos().update(**kwargs).execute()
+
+
+def _remove_if_exists(filename):
     try:
-        youtube.videos().update(**kwargs).execute()
-    except:
-        report_video_failed_to_rename(kwargs['body']['id'])
+        os.remove(filename)
+    except OSError:
+        pass
 
 
-def rename(youtube, ids_to_titles):
+def support_undo():
+    _remove_if_exists(_undo_filename)
+    return lambda video_id, old_title, new_title: \
+            _append(_undo_filename, '%s,%s' % (video_id, old_title))
+    
+    
+def rename(youtube, ids_to_titles, on_rename=None):
+    '''
+    on_rename: function with signature on_rename(video_id, old_title, new_title)
+    '''
+    if on_rename is None:
+        on_rename = lambda *args, **kwargs: None
+        
     ids = ids_to_titles.keys()
 
     items = video_list_response(youtube, ids)['items']
@@ -25,21 +46,32 @@ def rename(youtube, ids_to_titles):
     if missing:
         report_missing_videos(missing)
 
-    _save_existing_titles(items)
-
     for item in items:
-        videoId = item['id']
-        if videoId in missing: 
+        video_id = item['id']
+        if video_id in missing: 
             continue
+        
         snippet = item["snippet"]
-        snippet['title'] = ids_to_titles[videoId]
+        old_title = snippet['title']
+        new_title = ids_to_titles[video_id]
+        snippet['title'] = new_title
 
-        _update(youtube, 
-                part='snippet',
-                body=dict(snippet=snippet, id=videoId))
+        try:
+            _update(youtube, 
+                    part='snippet',
+                    body=dict(snippet=snippet, id=video_id))
+        except:
+            report_video_failed_to_rename(video_id)
+            continue
+    
+        on_rename(video_id, old_title, new_title)
 
 
 def undo(youtube):
+    if not isfile(_undo_filename):
+        report_nothing_to_undo()
+        return
+    
     ids_to_titles = ids_to_titles_from_file(_undo_filename)
     os.remove(_undo_filename);
     rename(youtube, ids_to_titles)
@@ -55,17 +87,7 @@ def _missing_videos(items, ids):
     return set(ids).difference(existing_ids)
 
 
-def _one_per_line(missing):
-    result = '\n'.join(missing)
-    return result
-
-
-def _save(ids_to_titles, filename):
-    with open(filename, "w") as f:
-        for k in ids_to_titles:
-            print("%s,%s" % (k, ids_to_titles[k]), file=f)
-
-
-def _save_existing_titles(items):
-    m = ids_to_titles_from_items(items)
-    _save(m, _undo_filename)
+def _append(filename, s):
+    with open(filename, "a") as f:
+        print(s, file=f)
+        f.flush()
