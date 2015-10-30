@@ -4,7 +4,7 @@ import re
 import sys
 
 from internal.data_utils import ids_to_titles_from_file, validate_rename_request
-from internal.exception import TooManyCommasException, DomainException
+from internal.exception import DomainException
 from internal.operations import support_undo
 import internal.operations as operations
 from internal.service.youtube import get_authenticated_youtube

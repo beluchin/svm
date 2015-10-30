@@ -43,7 +43,8 @@ class UndoTest(TestStubbedYouTube):
         self._invoke('rename v1,t1 v2,t2')
         self._reset_rename_calls()
         self._invoke('undo')
-        self.assertListEqual(self._all_renamed(), ['v2'])
+        self.assertListEqual(list(self._all_renamed().keys()), 
+                             ['v2'])
         
     @patch('internal.operations.report_nothing_to_undo')        
     def test_6_only_one_level_undo(self, reporter):

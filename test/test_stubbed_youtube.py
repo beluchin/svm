@@ -20,15 +20,20 @@ class TestStubbedYouTube(TestCase):
                 
     def _all_renamed(self):
         calls = self._update_mock.call_args_list
-        result = list()
+        result = dict()
         for c in calls:
             _, kwargs = c;
-            result.append(kwargs['body']['id'])
+            videoid = kwargs['body']['id']
+            title = kwargs['body']['snippet']['title']
+            result[videoid] = title 
         return result
                 
-    def _assert_was_renamed(self, videoid):
+    def _assert_was_renamed(self, videoid, title=None):
         self.assertIn(videoid, self._all_renamed())
 
+    def test_toremove(self):
+        self.assertIn(1, [1])
+        
     def _create_patch(self, name):
         patcher = patch(name)
         thing = patcher.start()

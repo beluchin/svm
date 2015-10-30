@@ -32,11 +32,19 @@ class RenameTest(TestStubbedYouTube):
         reports.assert_called_with('v1')
 
     def test_too_many_commas_in_input_file(self):
-        f = tempfile('a,\'this,title_has_one_comma\'')
-        
-        try:
+        with tempfile('a,\'this,title_has_one_comma\'') as f:
             self.assertRaises(
-                    TooManyCommasException, 
-                    self._invoke('rename-many %s' % f))
-        finally:
-            os.remove(f)
+                              TooManyCommasException, 
+                              self._invoke('rename-many %s' % f))
+
+    def test_quotes_are_stripped_from_titles_in_input_file(self):
+        self._stub_as_existing('a')
+        with tempfile('a,\'quoted title\'') as f:
+            self._invoke('rename-many %s' % f)
+        self._assert_was_renamed('a', 'quoted title')
+        
+    def test_too_many_commas_on_inline_rename_request(self):
+        self.assertRaises(
+                TooManyCommasException, 
+                self._invoke('rename v1,too,many_commas'))
+        
