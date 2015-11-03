@@ -14,6 +14,12 @@ You may rename videos in a playlist with the `rename-in-playlist` subcommand. Th
 
     svm.bat rename-in-playlist playlistId /the/path/to/the/file/with/mappings
 
+Notice that the playlist id can be extracted from the playlist url. On the playlist URL:
+
+    https://www.youtube.com/playlist?list=PL-gKBqMRNkt53ia4nVwanw_mrk1MDsI8J
+    
+the id is `PL-gKBqMRNkt53ia4nVwanw_mrk1MDsI8J`
+
 To rename a video, you need to provide the YouTube video id and the new title in a comma-separated pair:
 
     svm.bat rename the_video_id,the_new_title
