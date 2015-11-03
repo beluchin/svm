@@ -2,13 +2,14 @@
 import os
 from os.path import isfile
 
-from internal.data_utils import ids_to_titles_from_file
+from internal.data_utils import mappings
 from internal.reporting import \
         report_missing_videos,\
         report_video_failed_to_rename,\
         report_nothing_to_undo
 from internal.service import reset_default_credentials
-from internal.service.data_queries import video_list_response
+from internal.service.data_queries import video_list_response,\
+    id_to_title_mapping_from_playlist
 
 
 _undo_filename = "last_ids_to_titles"
@@ -72,7 +73,7 @@ def undo(youtube):
         report_nothing_to_undo()
         return
     
-    ids_to_titles = ids_to_titles_from_file(_undo_filename)
+    ids_to_titles = mappings(_undo_filename)
     os.remove(_undo_filename);
     rename(youtube, ids_to_titles)
 
@@ -91,3 +92,20 @@ def _append(filename, s):
     with open(filename, "a") as f:
         print(s, file=f)
         f.flush()
+
+
+def rename_in_playlist(youtube, playlistId, old_title_to_new):
+    def _id_to_new_title_mapping(id_to_old, old_to_new):
+        result = dict()
+        for id_ in id_to_old.keys():
+            old = id_to_old[id_]
+            new = old_to_new[old]
+            if new is None: continue
+            result[id_] = new
+        return result
+
+    id_to_old = id_to_title_mapping_from_playlist(youtube, playlistId)
+    id_to_new = _id_to_new_title_mapping(id_to_old, old_title_to_new)
+    rename(youtube, id_to_new, on_rename=support_undo())
+
+

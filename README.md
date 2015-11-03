@@ -1,15 +1,19 @@
 # svm
 Spartans swim team video manager
 
-Use this command line tool to rename videos in YouTube. The following subcommands are available: `rename`, `rename-many`, `undo`, and `reset-credentials`. The subcommands are invoked via the `svm.bat` command (or `svm` on a Mac) as in:
+Use this command line tool to rename videos in YouTube. The following subcommands are available: `rename-in-playlist`, `rename`, `rename-many`, `undo`, and `reset-credentials`. The subcommands are invoked via the `svm.bat` command (or `svm` on a Mac) as in:
 
     svm.bat <subcommand> ...
     
 Help messages are available for the tool and for each subcommand:
 
     svm.bat -h
-    svm.bat rename -h
+    svm.bat rename-in-playlist -h
     
+You may rename videos in a playlist with the `rename-in-playlist` subcommand. The subcommand takes in as arguments the **playlist id** and a file of old-to-new title mappings (comma separated):
+
+    svm.bat rename-in-playlist playlistId /the/path/to/the/file/with/mappings
+
 To rename a video, you need to provide the YouTube video id and the new title in a comma-separated pair:
 
     svm.bat rename the_video_id,the_new_title

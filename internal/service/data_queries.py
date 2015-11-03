@@ -11,3 +11,14 @@ def video_list_response(youtube, video_ids):
     return youtube.videos() \
         .list(id=','.join(video_ids), part='snippet') \
         .execute()
+
+
+def id_to_title_mapping_from_playlist(youtube, playlistId):
+    response = youtube.playlistItems()\
+            .list(playlistId=playlistId, part='snippet')\
+            .execute()
+    snippets = map(lambda i: i['snippet'], response['items'])
+    m = map(lambda s: (s['resourceId']['videoId'], s['title']),
+            snippets)
+    return dict(m)
+

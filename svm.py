@@ -3,7 +3,7 @@ import argparse
 import re
 import sys
 
-from internal.data_utils import ids_to_titles_from_file, validate_rename_request
+from internal.data_utils import mappings, validate_mapping
 from internal.exception import DomainException
 from internal.operations import support_undo
 import internal.operations as operations
@@ -26,6 +26,17 @@ def add_rename_many_parser(subparsers):
     p = subparsers.add_parser('rename-many', help='renames YouTube videos given a file')
     p.add_argument('filename', type=str, help='name of file with video mappings (id,title - one per line)')
     p.set_defaults(func=rename_many)
+
+
+def add_rename_in_playlist_parser(subparsers):
+    p = subparsers.add_parser(
+            'rename-in-playlist', 
+            help='renames videos in playlist given file with old_title,new_title mappings')
+    p.add_argument('playlistId', type=str, help='playlist ID')
+    p.add_argument('filename',
+                   type=str, 
+                   help='name of file with old_title,new_title mappings')
+    p.set_defaults(func=rename_in_playlist)
 
 
 def add_rename_parser(subparsers):
@@ -56,8 +67,15 @@ def rename(args):
 def rename_many(args):
     s = get_authenticated_youtube()
     operations.rename(s, 
-                      ids_to_titles_from_file(args.filename), 
+                      mappings(args.filename), 
                       on_rename=support_undo())
+    
+    
+def rename_in_playlist(args):
+    s = get_authenticated_youtube()
+    operations.rename_in_playlist(s,
+                               args.playlistId, 
+                               mappings(args.filename))
     
     
 class ParseRenameRequest(argparse.Action):
@@ -65,7 +83,7 @@ class ParseRenameRequest(argparse.Action):
         pairs = getattr(namespace, 'pairs', {})
         pairs = pairs if pairs is not None else {}
         for pair in values:
-            validate_rename_request(pair)
+            validate_mapping(pair)
             n, v = pair.split(',')
             pairs[n] = v
         setattr(namespace, 'pairs', pairs)
@@ -99,6 +117,7 @@ subparsers = parser.add_subparsers(title='subcommands')
 
 add_rename_parser(subparsers)
 add_rename_many_parser(subparsers)
+add_rename_in_playlist_parser(subparsers)
 add_reset_credentials_parser(subparsers)
 add_undo_parser(subparsers)
 

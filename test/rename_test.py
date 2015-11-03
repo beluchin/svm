@@ -1,5 +1,4 @@
 
-import os
 from unittest.mock import patch
 
 from internal.exception import TooManyCommasException
@@ -37,7 +36,7 @@ class RenameTest(TestStubbedYouTube):
                               TooManyCommasException, 
                               self._invoke('rename-many %s' % f))
 
-    def test_quotes_are_stripped_from_titles_in_input_file(self):
+    def test_strip_quotes_from_titles_in_input_file(self):
         self._stub_as_existing('a')
         with tempfile('a,\'quoted title\'') as f:
             self._invoke('rename-many %s' % f)
@@ -47,4 +46,12 @@ class RenameTest(TestStubbedYouTube):
         self.assertRaises(
                 TooManyCommasException, 
                 self._invoke('rename v1,too,many_commas'))
+    
+    def test_rename_playlist(self):
+        self._stub_as_existing_in_playlist('the_video_id', 
+                                           'the_old_title', 
+                                           'the_playlist_id')
+        with tempfile('the_old_title,the_new_title') as f:
+            self._invoke('rename-in-playlist the_playlist_id %s' % f)
         
+        self._assert_was_renamed('the_video_id', 'the_new_title')

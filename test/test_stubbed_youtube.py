@@ -8,11 +8,15 @@ import svm
 class TestStubbedYouTube(TestCase):
     def setUp(self):
         self._youtube = self._create_patch('svm.get_authenticated_youtube')
-        self._update_mock = self._youtube.return_value\
+        self._youtube_mock = self._youtube.return_value
+        self._update_mock = self._youtube_mock\
                 .videos.return_value\
                 .update
-        self._list_mock = self._youtube.return_value\
+        self._list_mock = self._youtube_mock\
                 .videos.return_value\
+                .list
+        self._playlistItems_mock = self._youtube_mock\
+                .playlistItems.return_value\
                 .list 
 
     def _reset_rename_calls(self):
@@ -29,11 +33,12 @@ class TestStubbedYouTube(TestCase):
         return result
                 
     def _assert_was_renamed(self, videoid, title=None):
-        self.assertIn(videoid, self._all_renamed())
+        titles = self._all_renamed()
+        if title is None:
+            self.assertIn(videoid, titles)
+        else:
+            self.assertEqual(titles[videoid], title)
 
-    def test_toremove(self):
-        self.assertIn(1, [1])
-        
     def _create_patch(self, name):
         patcher = patch(name)
         thing = patcher.start()
@@ -55,6 +60,19 @@ class TestStubbedYouTube(TestCase):
             return result
             
         self._list_mock.side_effect = f
+
+    def _stub_as_existing_in_playlist(self, videoid, title, playlistid):
+        def f(**kwargs):
+            result = MagicMock()
+            if kwargs['playlistId'] != playlistid: 
+                return result
+            result.execute.return_value = {'items': [
+                    {'snippet': {'title': title,
+                                 'resourceId': {'videoId': videoid}}}]}
+            return result
+        
+        self._stub_as_existing(videoid)
+        self._playlistItems_mock.side_effect = f
 
     def _stub_none_existing(self):
         self._list_mock.side_effect = None
