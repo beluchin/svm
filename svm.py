@@ -39,6 +39,22 @@ def add_rename_in_playlist_parser(subparsers):
     p.set_defaults(func=rename_in_playlist)
 
 
+def add_link_to_title_parser(subparsers):
+    p = subparsers.add_parser(
+            'link-to-title', 
+            help='outputs mapping of links-to-titles for videos in a given playlist')
+    p.add_argument('playlistId', type=str, help='playlist ID')
+    p.set_defaults(func=link_to_title)
+
+
+def add_id_to_title_parser(subparsers):
+    p = subparsers.add_parser(
+            'id-to-title', 
+            help='outputs mapping of ids-to-titles for videos in a given playlist')
+    p.add_argument('playlistId', type=str, help='playlist ID')
+    p.set_defaults(func=id_to_title)
+
+
 def add_rename_parser(subparsers):
     p = subparsers.add_parser('rename', help='renames YouTube videos')
     p.add_argument(
@@ -78,6 +94,16 @@ def rename_in_playlist(args):
                                mappings(args.filename))
     
     
+def link_to_title(args):
+    s = get_authenticated_youtube()
+    operations.link_to_title(s, args.playlistId)
+    
+    
+def id_to_title(args):
+    s = get_authenticated_youtube()
+    operations.id_to_title(s, args.playlistId)
+    
+    
 class ParseRenameRequest(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         pairs = getattr(namespace, 'pairs', {})
@@ -115,11 +141,11 @@ parser = argparse.ArgumentParser(
         epilog='type $ svm <subcommand> -h for further help on the subcommands')
 subparsers = parser.add_subparsers(title='subcommands')
 
-add_rename_parser(subparsers)
-add_rename_many_parser(subparsers)
-add_rename_in_playlist_parser(subparsers)
-add_reset_credentials_parser(subparsers)
-add_undo_parser(subparsers)
+for f in [add_rename_parser, add_rename_many_parser,
+          add_rename_in_playlist_parser, add_link_to_title_parser,
+          add_id_to_title_parser, add_reset_credentials_parser, 
+          add_undo_parser]:
+    f(subparsers)
 
 
 if __name__ == '__main__':

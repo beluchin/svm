@@ -6,7 +6,8 @@ from internal.data_utils import mappings
 from internal.reporting import \
         report_missing_videos,\
         report_video_failed_to_rename,\
-        report_nothing_to_undo
+        report_nothing_to_undo,\
+        report_mappings
 from internal.service import reset_default_credentials
 from internal.service.data_queries import video_list_response,\
     id_to_title_mapping_from_playlist
@@ -106,6 +107,25 @@ def rename_in_playlist(youtube, playlistId, old_title_to_new):
 
     id_to_old = id_to_title_mapping_from_playlist(youtube, playlistId)
     id_to_new = _id_to_new_title_mapping(id_to_old, old_title_to_new)
+
+    missing_videos = old_title_to_new.keys() - set(id_to_new.values())
+    if missing_videos:
+        report_missing_videos(missing_videos)
+    
     rename(youtube, id_to_new, on_rename=support_undo())
 
 
+def _to_link(videoId):
+    return 'https://www.youtube.com/watch?v=%s' % videoId
+
+
+def link_to_title(youtube, playlistId):
+    id_to_title = id_to_title_mapping_from_playlist(youtube, playlistId)
+    report_mappings(dict(map(
+            lambda k: (_to_link(k), id_to_title[k]),
+            id_to_title.keys())))
+
+
+def id_to_title(youtube, playlistId):
+    report_mappings(id_to_title_mapping_from_playlist(
+            youtube, playlistId))

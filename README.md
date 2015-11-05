@@ -42,6 +42,6 @@ To rename many videos in one go, use the `rename-many` subcommand that takes as 
 
     svm.bat rename-many /the/name/of/the/file
     
-Finally, should you make a mistake, you could undo your last action with the `undo` subcommand. The `undo` subcommand takes no arguments and only supports reverting the titles of the videos referenced in the last rename action:
+Finally, should you make a mistake, you could undo your last rename action with the `undo` subcommand. The `undo` subcommand takes no arguments and only supports reverting the titles of the videos that got renamed in the last rename action:
 
     svm.bat undo
