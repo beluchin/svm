@@ -25,7 +25,7 @@ The subcommand `link-to-title` can be used to get the mappings of links from a p
     
 It displays the mapping on the console. To redirect the output to a file use Windows output redirection operator (`>`):
 
-    smv.bat link-to-title <playlist> > /the/output/file
+    smv.bat link-to-title <playlistId> > /the/output/file
 
 Please, refer to the list of subcommands on the tool's help message for further info.
 
