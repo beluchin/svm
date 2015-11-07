@@ -62,12 +62,15 @@ class RenameTest(TestStubbedYouTube):
             self._invoke('rename-in-playlist the_playlist_id %s' % f)
         reports.assert_called_with({'missing_title'})
         
-    def test_rename_playlist_does_not_bail_when_titles_are_missing(self):
+    @patch('internal.operations.report_missing_videos')
+    def test_rename_playlist_does_not_bail_when_titles_are_missing(self,
+                                                                   reports):
         self._stub_as_existing_in_playlist('existing_video_id', 
                                            'existing_title', 
                                            'the_playlist_id')
         with tempfile('missing_title,n1',
                       'existing_title,n2') as f:
             self._invoke('rename-in-playlist the_playlist_id %s' % f)
+        reports.assert_called_with({'missing_title'})
         self._assert_was_renamed('existing_video_id', 'n2')
         

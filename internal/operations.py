@@ -100,7 +100,7 @@ def rename_in_playlist(youtube, playlistId, old_title_to_new):
         result = dict()
         for id_ in id_to_old.keys():
             old = id_to_old[id_]
-            new = old_to_new[old]
+            new = old_to_new.get(old)
             if new is None: continue
             result[id_] = new
         return result
@@ -108,7 +108,7 @@ def rename_in_playlist(youtube, playlistId, old_title_to_new):
     id_to_old = id_to_title_mapping_from_playlist(youtube, playlistId)
     id_to_new = _id_to_new_title_mapping(id_to_old, old_title_to_new)
 
-    missing_videos = old_title_to_new.keys() - set(id_to_new.values())
+    missing_videos = old_title_to_new.keys() - set(id_to_old.values())
     if missing_videos:
         report_missing_videos(missing_videos)
     

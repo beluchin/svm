@@ -20,5 +20,6 @@ class ForRealVideosInPlaylistTest(TestAuthenticatedForReal):
         with self.assertRaises(FailedToGetVideosFromPlaylistException):
             id_to_title_mapping_from_playlist(self._youtube, 'a_bad_id')
         
+
 if __name__ == '__main__':
     unittest.main()
