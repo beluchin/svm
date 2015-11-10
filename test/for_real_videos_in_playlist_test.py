@@ -20,6 +20,15 @@ class ForRealVideosInPlaylistTest(TestAuthenticatedForReal):
         with self.assertRaises(FailedToGetVideosFromPlaylistException):
             id_to_title_mapping_from_playlist(self._youtube, 'a_bad_id')
         
+    def test_maxResults(self):
+        expected = {'2_qmVg0qn-c': 'one', 'EAhK558eNKg': 'two'}
+        rename(self._youtube, expected)
+        actual = id_to_title_mapping_from_playlist(
+                self._youtube,
+                'PL-gKBqMRNkt53ia4nVwanw_mrk1MDsI8J',
+                maxResults=1)
+        self.assertEqual(expected, actual)
+        
 
 if __name__ == '__main__':
     unittest.main()
