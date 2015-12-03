@@ -11,7 +11,7 @@ def ids_to_titles_from_items(items):
     return result
 
 
-def validate_mapping(line):
+def ensure_valid_mapping(line):
     if (_contains_too_many_commas(line)):
         raise TooManyCommasException(line)
 
@@ -30,11 +30,16 @@ def _strip(*ss):
 
     
 def mappings(n):
+    def _skip(line):
+        return not line.strip()
+    
     result = dict()
     with open(n) as f:
         for line in f:
-            validate_mapping(line)
-            videoid, title = _strip(*line.split(','))
-            result[videoid] = title
+            if _skip(line):
+                continue
+            ensure_valid_mapping(line)
+            k, v = _strip(*line.split(','))
+            result[k] = v
 
     return result

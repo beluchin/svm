@@ -3,7 +3,7 @@ import argparse
 import re
 import sys
 
-from internal.data_utils import mappings, validate_mapping
+from internal.data_utils import mappings, ensure_valid_mapping
 from internal.exception import DomainException
 from internal.operations import support_undo
 import internal.operations as operations
@@ -109,7 +109,7 @@ class ParseRenameRequest(argparse.Action):
         pairs = getattr(namespace, 'pairs', {})
         pairs = pairs if pairs is not None else {}
         for pair in values:
-            validate_mapping(pair)
+            ensure_valid_mapping(pair)
             n, v = pair.split(',')
             pairs[n] = v
         setattr(namespace, 'pairs', pairs)

@@ -36,6 +36,10 @@ class RenameTest(TestStubbedYouTube):
                               TooManyCommasException, 
                               self._invoke('rename-many %s' % f))
 
+    def test_empty_lines_in_input_file(self):
+        with tempfile('') as f:
+            self._invoke('rename-many %s' % f)
+
     def test_strip_quotes_from_titles_in_input_file(self):
         self._stub_as_existing('a')
         with tempfile('a,\'quoted title\'') as f:
@@ -46,31 +50,3 @@ class RenameTest(TestStubbedYouTube):
         self.assertRaises(
                 TooManyCommasException, 
                 self._invoke('rename v1,too,many_commas'))
-    
-    def test_rename_playlist(self):
-        self._stub_as_existing_in_playlist('the_video_id', 
-                                           'the_old_title', 
-                                           'the_playlist_id')
-        with tempfile('the_old_title,the_new_title') as f:
-            self._invoke('rename-in-playlist the_playlist_id %s' % f)
-        
-        self._assert_was_renamed('the_video_id', 'the_new_title')
-        
-    @patch('internal.operations.report_missing_videos')
-    def test_rename_playlist_missing_titles(self, reports):
-        with tempfile('missing_title,the_new_title') as f:
-            self._invoke('rename-in-playlist the_playlist_id %s' % f)
-        reports.assert_called_with({'missing_title'})
-        
-    @patch('internal.operations.report_missing_videos')
-    def test_rename_playlist_does_not_bail_when_titles_are_missing(self,
-                                                                   reports):
-        self._stub_as_existing_in_playlist('existing_video_id', 
-                                           'existing_title', 
-                                           'the_playlist_id')
-        with tempfile('missing_title,n1',
-                      'existing_title,n2') as f:
-            self._invoke('rename-in-playlist the_playlist_id %s' % f)
-        reports.assert_called_with({'missing_title'})
-        self._assert_was_renamed('existing_video_id', 'n2')
-        

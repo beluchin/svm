@@ -5,6 +5,10 @@ from unittest.mock import patch, MagicMock
 import svm
 
 
+_empty_playlist_return_value = {'items': [],
+                                'pageInfo': {'totalResults': 0, 
+                                             'resultsPerPage': 0}}
+
 class TestStubbedYouTube(TestCase):
     def setUp(self):
         self._youtube = self._create_patch('svm.get_authenticated_youtube')
@@ -61,14 +65,21 @@ class TestStubbedYouTube(TestCase):
             
         self._list_mock.side_effect = f
 
+    def _stub_playlist_as_empty(self):
+        self._playlistItems_mock.return_value.execute.return_value = \
+                _empty_playlist_return_value
+                
     def _stub_as_existing_in_playlist(self, videoid, title, playlistid):
         def f(**kwargs):
             result = MagicMock()
             if kwargs['playlistId'] != playlistid: 
-                return result
-            result.execute.return_value = {'items': [
-                    {'snippet': {'title': title,
-                                 'resourceId': {'videoId': videoid}}}]}
+                r = _empty_playlist_return_value
+            else:
+                r ={'items': [ {'snippet': {'title': title,
+                                            'resourceId': {'videoId': videoid}}}],
+                    'pageInfo': {'totalResults': 1,
+                                 'resultsPerPage': 1}}
+            result.execute.return_value = r
             return result
         
         self._stub_as_existing(videoid)

@@ -9,7 +9,7 @@ from internal.reporting import \
         report_nothing_to_undo,\
         report_mappings
 from internal.service import reset_default_credentials
-from internal.service.data_queries import video_list_response,\
+from internal.service.data_queries import video_list_response_items,\
     id_to_title_mapping_from_playlist
 
 
@@ -37,22 +37,18 @@ def rename(youtube, ids_to_titles, on_rename=None):
     '''
     on_rename: function with signature on_rename(video_id, old_title, new_title)
     '''
+
     if on_rename is None:
         on_rename = lambda *args, **kwargs: None
         
     ids = ids_to_titles.keys()
-
-    items = video_list_response(youtube, ids)['items']
-
+    items = video_list_response_items(youtube, ids)
     missing = _missing_videos(items, ids)
-    if missing:
-        report_missing_videos(missing)
+    if missing: report_missing_videos(missing)
+    existing = filter(lambda item: item['id'] not in missing, items)
 
-    for item in items:
+    for item in existing:
         video_id = item['id']
-        if video_id in missing: 
-            continue
-        
         snippet = item["snippet"]
         old_title = snippet['title']
         new_title = ids_to_titles[video_id]

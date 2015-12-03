@@ -19,6 +19,10 @@ class ForRealVideosInPlaylistTest(TestAuthenticatedForReal):
     def test_invalid_playlist(self):
         with self.assertRaises(FailedToGetVideosFromPlaylistException):
             id_to_title_mapping_from_playlist(self._youtube, 'a_bad_id')
+    
+    def test_empty_playlist(self):
+        id_to_title_mapping_from_playlist(self._youtube, 
+                                          'PL-gKBqMRNkt6J2GyhGI-0eAdpFE6zYT9n')
         
     def test_maxResults(self):
         expected = {'2_qmVg0qn-c': 'one', 'EAhK558eNKg': 'two'}
